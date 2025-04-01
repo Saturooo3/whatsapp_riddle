@@ -15,7 +15,7 @@ class TwilioTool:
     def __init__(self, service_sid: str):
         self.client = Client(api_key, api_secret, account_sid)
         self.service = self.client.conversations.v1.services(service_sid)
-<<<<<<< HEAD
+
 
 
     def create_conversation(self, name):
