@@ -53,7 +53,7 @@ def get_riddle_format():
     riddle_difficulty = input("Choose difficulty (easy, medium, hard): ")
     return riddle_type, riddle_difficulty
 
-def check_answer_and_give_feedback(answer):
+def check_answer_and_give_feedback(answer, riddle_data, conversation):
     if answer == riddle_data["answer"].strip().lower():
         TwilioTool.send_message(conversation, "Correct!")
     else:
@@ -85,7 +85,7 @@ def main():
         TwilioTool.send_message(conversation, riddle_data["riddle"])
 
         user_answer = input("Your answer: ").strip().lower()
-        check_answer_and_give_feedback(user_answer)
+        check_answer_and_give_feedback(user_answer, riddle_data, conversation)
 
         ask_to_continue = input("Do you want another riddle? (yes/no): ").strip().lower()
         if ask_to_continue != "yes":
