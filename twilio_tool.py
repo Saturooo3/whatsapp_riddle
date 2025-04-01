@@ -7,12 +7,18 @@ class TwilioTool:
 
 
     def create_conversation(self, name):
+        """
+        gets name for conversation and creates a new conversation"
+        """
         name_str = f"Chat with {name}"
         conversation = self.service.conversations.create(friendly_name=name_str)
         return conversation
 
 
     def create_participant(self, conversation):
+        """
+        gets a conversation and adds participant to the conversation
+        """
         participant = (
             self.service.conversations(conversation.sid)
                 .participants.create(
@@ -24,6 +30,10 @@ class TwilioTool:
 
 
     def get_participant(self, my_number):
+        """
+        gets a number and returns participant if already exists,
+        returns None if not
+        """
         participants = (self.service.conversations(conversation.sid)
                         .participants.list())
         for participant in participants:
@@ -32,7 +42,10 @@ class TwilioTool:
         return None
 
 
-    def get_my_conversation(self, my_number):
+    def get_conversation(self, my_number):
+        """
+        gets number and returns conversation if exists, if not returns None
+        """
         for conversation in self.service.conversations.list():
             for participant in conversation.participants.list():
                 if participant.messaging_binding["address"] == my_number:
@@ -42,6 +55,9 @@ class TwilioTool:
 
 
     def send_message(self, conversation, message: str):
+        """
+        gets conversation and message as string and sends message to conversation
+        """
         self.serivce.conversations(conversation.sid).messages.create(
             author=MASTERSHOOL_NUM,
             body=message
