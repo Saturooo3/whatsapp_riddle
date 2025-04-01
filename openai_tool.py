@@ -2,11 +2,6 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-class RiddleResponse(BaseModel):
-    riddle: str
-    answer: str
-    hint: str
-
 class OpenAITool:
     def __init__(self):
         load_dotenv()
@@ -20,11 +15,11 @@ class OpenAITool:
         return response.choices[0].message.content
 
 
-    def get_structured_answer(self, riddle_type, riddle_difficulty, messages, model) -> dict:
+    def structured_answer(self, messages, model):
         completion = self.client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages= messages,         #messages muss eine Liste werden
-            response_format=format,
+            response_format=model,
         )
 
         return completion.choices[0].message.parsed

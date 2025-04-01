@@ -22,4 +22,11 @@ def test_openai_with_structure():
 
 def test_openai_with_history():
     tool = OpenAITool()
+    question = "Was ist die Hauptstadt von Deutschland?"
+    response = tool.structured_answer(question, CountryStats)
+    print(response)
+
+
+
+
 
