@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from twilio_tool import TwilioTool
-from openai_tool import OpenAITool
+from openai_tool import (OpenAITool, RiddleResponse)
 
 # Laden der Umgebungsvariablen
 load_dotenv()
@@ -80,7 +80,7 @@ def main():
     continue_game = True
     while continue_game:
         riddle_type, riddle_difficulty = get_riddle_format()
-        riddle_data = OpenAITool.get_structured_answer(riddle_type, riddle_difficulty)
+        riddle_data = OpenAITool.get_structured_answer(riddle_type=riddle_type, riddle_difficulty=riddle_difficulty, format=RiddleResponse, messages=)
 
         TwilioTool.send_message(conversation, riddle_data["riddle"])
 
