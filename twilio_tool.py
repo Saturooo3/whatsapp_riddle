@@ -27,14 +27,14 @@ class TwilioTool:
         return conversation
 
 
-    def create_participant(self, conversation):
+    def create_participant(self, conversation, my_number):
         """
         gets a conversation and adds participant to the conversation
         """
         participant = (
             self.service.conversations(conversation.sid)
                 .participants.create(
-                messaging_binding_address=PERSONAL_NUM,
+                messaging_binding_address=my_number,
                 messaging_binding_proxy_address=MASTERSHOOL_NUM
             )
         )
@@ -70,11 +70,11 @@ class TwilioTool:
         """
         gets conversation and message as string and sends message to conversation
         """
-        self.service.conversations(conversation.sid).messages.create(
+        message=self.service.conversations(conversation.sid).messages.create(
             author=MASTERSHOOL_NUM,
             body=message
         )
-
+        return message.sid
 
     def send_whatsapp_message(self, to_whatsapp: str, body: str) -> str:
         from_whatsapp = MASTERSHOOL_NUM

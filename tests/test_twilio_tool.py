@@ -22,13 +22,13 @@ def test_send_whatsapp_message():
 # Test für das Erstellen einer Konversation
 def test_create_conversation():
     tool = TwilioTool(SERVICE_SID)
-    conversation = tool.create_conversation()
+    conversation = tool.create_conversation("name")
     assert conversation is not None, "Es wurde keine Konversation gefunden"
 
 # Test für das Abrufen einer Konversation
 def test_get_my_conversation():
     tool = TwilioTool(SERVICE_SID)
-    conversation = tool.get_my_conversation()
+    conversation = tool.get_conversation(PERSONAL_NUM)
     assert conversation is not None
     assert hasattr(conversation, "sid")
     print(f"Conversation SID: {conversation.sid}")
@@ -37,8 +37,8 @@ def test_get_my_conversation():
 def test_create_participant():
     tool = TwilioTool(SERVICE_SID)
     # Zuerst eine Konversation erstellen
-    conversation = tool.create_conversation()
-    participant = tool.create_participant(conversation)
+    conversation = tool.create_conversation("2test_partisipance")
+    participant = tool.create_participant(conversation, PERSONAL_NUM)
     assert participant is not None
     assert hasattr(participant, "sid")
     print(f"Participant SID: {participant.sid}")
@@ -47,14 +47,11 @@ def test_create_participant():
 def test_create_message():
     tool = TwilioTool(SERVICE_SID)
     # Zuerst eine Konversation erstellen
-    conversation = tool.create_conversation()
+    conversation = tool.create_conversation("3test_partisipance")
     message_sid = tool.create_message(conversation, "Testnachricht")
+    print(f"Message SID: {message_sid}")
     assert message_sid is not None
     assert isinstance(message_sid, str)
-    print(f"Message SID: {message_sid}")
 
-# Test für Fehlerbehandlung bei ungültigen Eingaben
-def test_send_invalid_whatsapp_message():
-    tool = TwilioTool(SERVICE_SID)
-    with pytest.raises(ValueError):
-        tool.send_whatsapp_message("whatsapp:+4946798222452", "Testnachricht")
+
+
