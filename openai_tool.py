@@ -7,7 +7,7 @@ class OpenAITool:
         load_dotenv()
         self.client = OpenAI()
 
-    def answer(self, prompt):
+    def send_prompt(self, prompt):
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
@@ -15,7 +15,7 @@ class OpenAITool:
         return response.choices[0].message.content
 
 
-    def structured_answer(self, messages, model):
+    def get_structured_answer(self, riddle_type, riddle_difficulty, messages, model) -> dict:
         completion = self.client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages= messages,         #messages muss eine Liste werden

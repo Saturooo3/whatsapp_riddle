@@ -1,9 +1,7 @@
-from twilio.rest import Client
 import os
 from dotenv import load_dotenv
 from twilio_tool import TwilioTool
 from openai_tool import OpenAITool
-from twilio.rest import Client
 
 # Laden der Umgebungsvariablen
 load_dotenv()
@@ -16,16 +14,20 @@ SVC_ID = os.getenv("SERVICE_SID")
 MASTERSHOOL_NUM = dotenv.load_dotenv("MASTERSHOOL_NUMBER")
 PERSONAL_NUM = dotenv.load_dotenv("PERSONAL_NUMBER")
 
+twilio_client = TwilioTool(SVC_ID)
+openai_client = OpenAITool()
 
 api_key = API_KEY
 api_secret = API_KEY_SECRET
 account_sid = ACC_SID
-twilio_client = Client(api_key, api_secret, account_sid)
-service = twilio_client.conversations.v1.services(SVC_ID)
-openai_client = OpenAI()
+# twilio_client = Client(api_key, api_secret, account_sid)                          #unnecessary?
+# service = twilio_client.conversations.v1.services(SVC_ID)                          #unnecessary?
+
 
 # Initialisierung des Twilio-Clients
-twilio_client = Client(API_KEY, API_KEY_SECRET, ACC_SID)
+# twilio_client = Client(API_KEY, API_KEY_SECRET, ACC_SID)                          #unnecessary?
+
+
 
 def display_greeting():
     text = (
@@ -46,46 +48,50 @@ def get_number_and_name():
     name = input("Enter your name: ")
     return number, name
 
+def get_riddle_format():
+    riddle_type = input("Choose riddle type (e.g., logic, math, word): ")
+    riddle_difficulty = input("Choose difficulty (easy, medium, hard): ")
+    return riddle_type, riddle_difficulty
 
-def get_all_participants():
-    pass
+def check_answer_and_give_feedback(answer):
+    if answer == riddle_data["answer"].strip().lower():
+        TwilioTool.send_message(conversation, "Correct!")
+    else:
+        TwilioTool.send_message(conversation,
+                                f"Wrong! Here's a hint: {riddle_data["hint"]}")
+        answer = input("Try again! ").strip().lower()
+        if answer == riddle_data["answer"].strip().lower():
+            TwilioTool.send_message(conversation, "Correct!")
+        else:
+            TwilioTool.send_message(conversation,
+                                    f"Wrong! The correct answer was: {riddle_data["answer"]}")
 
 
 def main():
     display_greeting()
-    my_number, my_name = get_number()
+    my_number, my_name = get_number_and_name()
     my_number = PERSONAL_NUM                                                            #delete after tests
-    conversation = get_my_conversation(my_number) or create_conversation()
-    participant = get_participant(conversation) or create_participant(conversation)
 
-    while True:
-        send_input_to_chatgpt(prompt)
-        structured_answer = get_structured_answer()
-        send_riddle_to_user()
-        answer = get_answer_from_user()
-        check_if_answer_is_correct(answer)
-        if answer == structured_answer["answer"]:
-            give_user_positive_feedback()
-        else:
-            give_user_hint()
+    conversation = twilio_client.get_conversation(my_number)
+    if not conversation:
+        conversation = twilio_client.create_conversation(my_name)
+        twilio_client.create_participant(conversation)
 
+    continue_game = True
+    while continue_game:
+        riddle_type, riddle_difficulty = get_riddle_format()
+        riddle_data = OpenAITool.get_structured_answer(riddle_type, riddle_difficulty)
 
+        TwilioTool.send_message(conversation, riddle_data["riddle"])
+
+        user_answer = input("Your answer: ").strip().lower()
+        check_answer_and_give_feedback(user_answer)
+
+        ask_to_continue = input("Do you want another riddle? (yes/no): ").strip().lower()
+        if ask_to_continue != "yes":
+            continue_game = False
+            TwilioTool.send_message(conversation, "See you next time!")
 
 
 if __name__ == "__main__":
     main()
-
-    # print("Rätselspiel gestartet!")
-    #
-    # twilio_tool = TwilioTool(twilio_client, SVC_ID)
-    # openai_tool = OpenAITool(os.getenv("OPENAI_API_KEY"))
-    #
-    # prompt = "Erstelle ein kurzes, spannendes Rätsel."
-    # raetsel = openai_tool.generate_text(prompt)
-    # if not raetsel:
-    #     raetsel = "Notfall-Rätsel: Was wird nasser je mehr es trocknet? Ein Handtuch!"
-    # print("Rätsel:", raetsel)
-    #
-    # recipient = input("Gib deine WhatsApp-Nummer ein (+49...): ")
-    # message_id = twilio_tool.send_whatsapp_message(recipient, rätsel)
-    # print("Nachricht gesendet, ID:", message_id)
