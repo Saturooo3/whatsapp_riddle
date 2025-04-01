@@ -29,7 +29,7 @@ class TwilioTool:
         return participant
 
 
-    def get_participant(self, my_number):
+    def get_participant(self, conversation, my_number):
         """
         gets a number and returns participant if already exists,
         returns None if not
@@ -58,7 +58,7 @@ class TwilioTool:
         """
         gets conversation and message as string and sends message to conversation
         """
-        self.serivce.conversations(conversation.sid).messages.create(
+        self.service.conversations(conversation.sid).messages.create(
             author=MASTERSHOOL_NUM,
             body=message
         )
