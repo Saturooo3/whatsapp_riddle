@@ -66,7 +66,7 @@ class TwilioTool:
         return None
 
 
-    def send_message(self, conversation, message: str):
+    def create_message(self, conversation, message: str):
         """
         gets conversation and message as string and sends message to conversation
         """
@@ -87,35 +87,3 @@ class TwilioTool:
         )
 
         return message.sid
-
-    def create_conversation(self):
-        conversation = self.service.conversations.create()
-        return conversation
-
-    def get_my_conversation(self):
-        for conversation in self.service.conversations.list():
-            for participant in conversation.participants.list():
-                if participant.messaging_binding["address"] == PERSONAL_NUM:
-                    return conversation
-
-        return None
-
-    def create_participant(self, conversation):
-        participant = (
-            self.client.conversations.v1.services(SERVICE_SID)
-            .conversations(conversation.sid)
-            .participants.create(
-                messaging_binding_address=PERSONAL_NUM,
-                messaging_binding_proxy_address=MASTERSHOOL_NUM
-            )
-        )
-        return participant
-
-    def create_message(self, conversation, message: str):
-        self.client.conversations.v1.services(SERVICE_SID) \
-            .conversations(conversation.sid) \
-            .messages.create(
-            author=MASTERSHOOL_NUM,
-            body=message
-        )
-
