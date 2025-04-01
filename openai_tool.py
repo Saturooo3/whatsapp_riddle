@@ -15,14 +15,10 @@ class OpenAITool:
         return response.choices[0].message.content
 
 
-    def structured_answer(self, prompt, model):
+    def structured_answer(self, messages, model):
         completion = self.client.beta.chat.completions.parse(
             model="gpt-4o-mini",
-            messages=[
-#                {"role": "system", "content": "Extract the event information."},
-                {"role": "user",
-                 "content": prompt},
-            ],
+            messages= messages,         #messages muss eine Liste werden
             response_format=model,
         )
 
