@@ -19,5 +19,7 @@ def test_openai_with_structure():
     response = tool.structured_answer("Was ist die Hauptstadt und die Einwohnerzahl von Deutschland?", CountryStats)
     print(response)
 
+
 def test_openai_with_history():
     tool = OpenAITool()
+
