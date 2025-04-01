@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from twilio_tool import TwilioTool
-from openai_tool import (OpenAITool, RiddleResponse)
+from openai_tool import OpenAITool
 
 # Laden der Umgebungsvariablen
 load_dotenv()
@@ -11,8 +11,8 @@ ACC_SID = os.getenv("ACCOUNT_SID")
 API_KEY = os.getenv("API_KEY_SID")
 API_KEY_SECRET = os.getenv("API_KEY_SECRET")
 SVC_ID = os.getenv("SERVICE_SID")
-MASTERSHOOL_NUM = dotenv.load_dotenv("MASTERSHOOL_NUMBER")
-PERSONAL_NUM = dotenv.load_dotenv("PERSONAL_NUMBER")
+MASTERSHOOL_NUM = os.getenv("MASTERSHOOL_NUMBER")
+PERSONAL_NUM = os.getenv("PERSONAL_NUMBER")
 
 twilio_client = TwilioTool(SVC_ID)
 openai_client = OpenAITool()
@@ -55,22 +55,20 @@ def get_riddle_format():
 
 def check_answer_and_give_feedback(answer, riddle_data, conversation):
     if answer == riddle_data["answer"].strip().lower():
-        TwilioTool.send_message(conversation, "Correct!")
+        TwilioTool.create_message(conversation, "Correct!")
     else:
-        TwilioTool.send_message(conversation,
-                                f"Wrong! Here's a hint: {riddle_data["hint"]}")
+        TwilioTool.create_message(conversation=conversation, message=f"Wrong! Here's a hint: {riddle_data["hint"]}")
         answer = input("Try again! ").strip().lower()
         if answer == riddle_data["answer"].strip().lower():
-            TwilioTool.send_message(conversation, "Correct!")
+            TwilioTool.create_message(conversation, "Correct!")
         else:
-            TwilioTool.send_message(conversation,
+            TwilioTool.create_message(conversation,
                                     f"Wrong! The correct answer was: {riddle_data["answer"]}")
 
 
 def main():
     display_greeting()
     my_number, my_name = get_number_and_name()
-    my_number = PERSONAL_NUM                                                            #delete after tests
 
     conversation = twilio_client.get_conversation(my_number)
     if not conversation:
@@ -82,7 +80,7 @@ def main():
         riddle_type, riddle_difficulty = get_riddle_format()
         riddle_data = OpenAITool.structured_answer(messages, model)
 
-        TwilioTool.send_message(conversation, riddle_data["riddle"])
+        TwilioTool.create_message(conversation, riddle_data["riddle"])
 
         user_answer = input("Your answer: ").strip().lower()
         check_answer_and_give_feedback(user_answer, riddle_data, conversation)
@@ -90,7 +88,7 @@ def main():
         ask_to_continue = input("Do you want another riddle? (yes/no): ").strip().lower()
         if ask_to_continue != "yes":
             continue_game = False
-            TwilioTool.send_message(conversation, "See you next time!")
+            TwilioTool.create_message(conversation, "See you next time!")
 
 
 if __name__ == "__main__":
