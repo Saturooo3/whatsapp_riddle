@@ -4,6 +4,7 @@ from twilio_tool import TwilioTool
 from openai_tool import OpenAITool
 from whatsapp_riddle_executers import (Riddle, UserGuessAnalysis)
 from rich import console
+import json
 
 twilio_client = TwilioTool()
 openai_client = OpenAITool()
@@ -49,7 +50,7 @@ def check_answer_and_give_feedback(conversation, messages):
             twilio_client.create_message(conversation, "You did it!")
             break
         elif user_guess_analysis.is_giving_up:
-            twilio_client.create_message(conversation, "Shame on you. You gave up!")
+            twilio_client.create_message(conversation, f"Shame on you. You gave up!\nThe answer was: {user_guess_analysis.answer}")
             break
         elif user_guess_analysis.is_asking_for_hint:
             twilio_client.create_message(conversation, user_guess_analysis.hint)
@@ -75,15 +76,30 @@ def load_or_create_conversation(my_name):
 
     return conversation
 
-def initialize_messages(riddle_type):
+def initialize_messages(riddle_type, asked_riddles):
+    initialization_message = (f"Create a new riddle for me, that is not in the list "
+                              f"{asked_riddles}. It should be riddle from type {riddle_type}")
     messages = [
             {"role": "system",
              "content": "You are my assistant to give me riddles to solve, and give me hints, when I'm stuck."},
             {"role": "user",
-             "content": f"Create a riddle for me to solve with the type {riddle_type}"}
+             "content": initialization_message }
         ]
 
     return messages
+
+def read_asked_riddles_from_json():
+    try:
+        with open("asked_riddles.json", "r") as f:
+            data = json.loads(f.read())
+        return data
+    except (json.JSONDecodeError, FileNotFoundError):
+        return []
+
+def write_asked_riddles_to_json(asked_riddles):
+    with open("asked_riddles.json", "w") as f:
+        f.write(json.dumps(asked_riddles))
+
 
 def main():
 
@@ -103,16 +119,19 @@ def main():
     while continue_game:
         riddle_type = get_riddle_type(conversation)
 
-        messages = initialize_messages(riddle_type)
+        asked_riddles : list = read_asked_riddles_from_json()
+        messages = initialize_messages(riddle_type, asked_riddles)
 
         riddle_response: Riddle = openai_client.structured_answer(messages=messages, model=Riddle)
-        twilio_client.create_message(conversation,riddle_response.content)
+        twilio_client.create_message(conversation, riddle_response.content)
+        console.print(f"Riddle send to player", style="bold blue")
+        asked_riddles.append(riddle_response.content)
+        write_asked_riddles_to_json(asked_riddles)
 
-        messages.append(
-            {"role": "assistant", "content": riddle_response.content})
+        messages.append({"role": "assistant", "content": riddle_response.content})
 
         check_answer_and_give_feedback(conversation, messages)
-
+        console.print(f"Answer checked", style="bold blue")
 
 if __name__ == "__main__":
     main()
