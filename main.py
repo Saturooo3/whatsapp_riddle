@@ -64,12 +64,12 @@ def check_answer_and_give_feedback(conversation, messages):
             messages.append(
                 {"role": "assistant", "content": user_guess_analysis.hint})
 
-def load_or_create_conversation(my_name):
+def load_or_create_conversation():
     conversation = twilio_client.get_conversation()
     if not conversation:
         console.print("No conversation found, creating new one",
                       style="bold blue")
-        conversation = twilio_client.create_conversation(my_name)
+        conversation = twilio_client.create_conversation()
         twilio_client.create_participant(conversation)
         console.print("Created new conversation and participant",
                       style="bold blue")
@@ -102,12 +102,10 @@ def write_asked_riddles_to_json(asked_riddles):
 
 
 def main():
-
     console.print("Starting game!", style="bold green")
-    my_name = "Yusuf"
 
     console.print(f"Getting conversation for {twilio_client.my_number}", style="bold blue")
-    conversation = load_or_create_conversation(my_name)
+    conversation = load_or_create_conversation()
     console.print("Got conversation from twilio", style="bold blue")
 
     greeting = display_greeting()

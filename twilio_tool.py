@@ -21,19 +21,21 @@ class TwilioTool:
         assert self.service_sid is not None, "TWILIO_SERVICE_SID is not set"
         self.twilio_number = os.getenv("TWILIO_MASTERSCHOOL_NUM")
         assert self.twilio_number is not None, "TWILIO_MASTERSCHOOL_NUM is not set"
-        self.my_number = os.getenv("MY_NUM")
-        assert self.my_number is not None, "MY_NUM is not set"
+        self.my_number = "whatsapp:" + input("Enter your number(+49....): ")
+        assert self.my_number is not None, "my_number is not set"
+        self.my_name = input("Enter your name: ")
+        assert self.my_name is not None, "my_name is not set"
 
         self.client = Client(self.api_key, self.api_key_secret, self.account_sid)
         self.service = self.client.conversations.v1.services(self.service_sid)
 
 
 
-    def create_conversation(self, name):
+    def create_conversation(self):
         """
         gets name for conversation and creates a new conversation
         """
-        name_str = f"Chat with {name}"
+        name_str = f"Chat with {self.my_name}"
         conversation = self.service.conversations.create(friendly_name=name_str)
         return conversation
 
@@ -80,6 +82,12 @@ class TwilioTool:
                     return conversation
         console.print(f"No conversation found for {self.my_number}", style="bold red")
         return None
+
+
+    def delete_conversations(self):
+        for conversation in self.service.conversations.list():
+            print(f"Deleting: {conversation.friendly_name}")
+            self.service.conversations(conversation.sid).delete()
 
 
     def create_message(self, conversation, message: str):
