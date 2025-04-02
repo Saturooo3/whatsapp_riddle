@@ -1,24 +1,11 @@
-import pytest
 from twilio_tool import TwilioTool
-from dotenv import load_dotenv
-import os
 
 
-# Lade die .env-Datei, um die Umgebungsvariablen zu laden
-load_dotenv()
-
-# Beispielhafte Testdaten
-API_KEY : str = os.getenv("API_KEY")
-API_KEY_SECRET: str  = os.getenv("API_KEY_SECRET")
-ACC_SID: str  = os.getenv("ACC_SID")
-SVC_ID: str  = os.getenv("SVC_ID")
-PERSONAL_NUM: str  = os.getenv("PERSONAL_NUM")
-MASTERSCHOOL_NUM: str  = os.getenv("MASTERSCHOOL_NUM")
 
 # Test für das Senden einer WhatsApp-Nachricht
 def test_send_whatsapp_message():
     tool = TwilioTool()
-    response = tool.send_whatsapp_message(PERSONAL_NUM, "Testnachricht")
+    response = tool.send_whatsapp_message("Testnachricht")
     print(f"Message SID: {response}")
     assert response is not None
     assert isinstance(response, str)
@@ -32,7 +19,7 @@ def test_create_conversation():
 # Test für das Abrufen einer Konversation
 def test_get_my_conversation():
     tool = TwilioTool()
-    conversation = tool.get_conversation(PERSONAL_NUM)
+    conversation = tool.get_conversation()
     assert conversation is not None
     print(conversation)
     assert hasattr(conversation, "sid")
@@ -43,7 +30,7 @@ def test_create_participant():
     tool = TwilioTool()
     # Zuerst eine Konversation erstellen
     conversation = tool.create_conversation("part2")
-    participant = tool.create_participant(conversation, PERSONAL_NUM)
+    participant = tool.create_participant(conversation)
     assert participant is not None
     assert hasattr(participant, "sid")
     print(f"Participant SID: {participant.sid}")
@@ -52,7 +39,7 @@ def test_create_participant():
 def test_create_message():
     tool = TwilioTool()
     # Zuerst eine Konversation erstellen
-    conversation = tool.get_conversation(PERSONAL_NUM)
+    conversation = tool.get_conversation()
     message_sid = tool.create_message(conversation, message="Testnachricht")
     print(f"Message SID: {message_sid}")
     assert message_sid is not None
@@ -61,7 +48,7 @@ def test_create_message():
 #Test für das Abrufen der Nachrichten
 def test_list_messages():
     tool = TwilioTool()
-    conversation = tool.get_conversation(my_number=PERSONAL_NUM)
+    conversation = tool.get_conversation()
     messages = tool.get_messages(conversation)
     for message in messages:
         print(f"From: {message.author}, Message: {message.body}")
@@ -71,10 +58,10 @@ def test_list_messages():
 #Test für das Abrufen eines Teilnehmers
 def test_get_participant():
     tool = TwilioTool()
-    conversation = tool.get_conversation(my_number=PERSONAL_NUM)
-    participant = tool.get_participant(conversation, PERSONAL_NUM)
+    conversation = tool.get_conversation()
+    participant = tool.get_participant(conversation)
     assert participant is not None
-    assert participant.messaging_binding.get("address") == PERSONAL_NUM
+    assert participant.messaging_binding.get("address") == tool.my_number
 
 
 

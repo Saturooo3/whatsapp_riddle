@@ -21,6 +21,8 @@ class TwilioTool:
         assert self.service_sid is not None, "TWILIO_SERVICE_SID is not set"
         self.twilio_number = os.getenv("TWILIO_MASTERSCHOOL_NUM")
         assert self.twilio_number is not None, "TWILIO_MASTERSCHOOL_NUM is not set"
+        self.my_number = os.getenv("MY_NUM")
+        assert self.my_number is not None, "MY_NUM is not set"
 
         self.client = Client(self.api_key, self.api_key_secret, self.account_sid)
         self.service = self.client.conversations.v1.services(self.service_sid)
@@ -36,22 +38,22 @@ class TwilioTool:
         return conversation
 
 
-    def create_participant(self, conversation, my_number):
+    def create_participant(self, conversation):
         """
         gets a conversation and adds participant to the conversation
         """
-        console.print(f"Creating participants for conversation {conversation.sid}, my number {my_number}, twilio number {self.twilio_number}", style="bold blue")
+        console.print(f"Creating participants for conversation {conversation.sid}, my number {self.my_number}, twilio number {self.twilio_number}", style="bold blue")
         participant = (
                 conversation
                 .participants.create(
-                    messaging_binding_address=my_number,
+                    messaging_binding_address=self.my_number,
                     messaging_binding_proxy_address=self.twilio_number
             )
         )
         return participant
 
 
-    def get_participant(self, conversation, my_number):
+    def get_participant(self, conversation):
         """
         gets a number and returns participant if already exists,
         returns None if not
@@ -59,12 +61,12 @@ class TwilioTool:
         participants = (self.service.conversations(conversation.sid)
                         .participants.list())
         for participant in participants:
-            if participant.messaging_binding.get("address") == my_number:
+            if participant.messaging_binding.get("address") == self.my_number:
                 return participant
         return None
 
 
-    def get_conversation(self, my_number):
+    def get_conversation(self):
         """
         gets number and returns conversation if exists, if not returns None
         """
@@ -74,9 +76,9 @@ class TwilioTool:
                 console.print(f"Checking participant {participant.sid}", style="bold blue")
                 if participant.messaging_binding is None:
                     continue
-                if participant.messaging_binding.get("address") == my_number:
+                if participant.messaging_binding.get("address") == self.my_number:
                     return conversation
-        console.print(f"No conversation found for {my_number}", style="bold red")
+        console.print(f"No conversation found for {self.my_number}", style="bold red")
         return None
 
 
@@ -109,14 +111,14 @@ class TwilioTool:
         return messages
 
 
-    def get_last_message_from_user(self, conversation, my_number):
+    def get_last_message_from_user(self, conversation):
         while True:
             messages = self.get_messages(conversation)
             if not messages:
                 sleep(1)
                 continue
             last_message = messages[-1]
-            if last_message.author != my_number:
+            if last_message.author != self.my_number:
                 sleep(1)
                 continue
             else:

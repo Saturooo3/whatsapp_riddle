@@ -30,14 +30,14 @@ def get_number_and_name():
     return number, name
 
 
-def get_riddle_type(conversation, my_number):
+def get_riddle_type(conversation):
     ask_riddle_type = "Choose riddle type (e.g., logic, math, word): "
     twilio_client.create_message(conversation, message=ask_riddle_type)
-    riddle_type = twilio_client.get_last_message_from_user(conversation, my_number)
+    riddle_type = twilio_client.get_last_message_from_user(conversation, twilio_client.my_number)
     return riddle_type
 
 
-def check_answer_and_give_feedback(answer, riddle_data, conversation, my_number):
+def check_answer_and_give_feedback(answer, riddle_data, conversation):
     if answer == riddle_data["answer"].strip().lower():
         twilio_client.create_message(conversation, "Correct!")
     else:
@@ -45,7 +45,7 @@ def check_answer_and_give_feedback(answer, riddle_data, conversation, my_number)
                                           f"{riddle_data["hint"]}\nTry again!")
 
         twilio_client.create_message(conversation=conversation, message=response_for_first_wrong_answer)
-        answer = twilio_client.get_last_message_from_user(conversation, my_number)                  #muss den letzten Eintrag vom participant raussuchen
+        answer = twilio_client.get_last_message_from_user(conversation, twilio_client.my_number)                  #muss den letzten Eintrag vom participant raussuchen
 
         if answer == riddle_data["answer"].strip().lower():
             twilio_client.create_message(conversation, "Correct!")
@@ -57,18 +57,15 @@ def check_answer_and_give_feedback(answer, riddle_data, conversation, my_number)
 
 def main():
 
-    #my_number, my_name = get_number_and_name()
     console.print("Starting game!", style="bold green")
-    load_dotenv()
-    my_number = os.getenv("MY_NUM")
     my_name = "Yusuf"
 
-    console.print(f"Getting conversation for {my_number}", style="bold blue")
-    conversation = twilio_client.get_conversation(my_number)
+    console.print(f"Getting conversation for {twilio_client.my_number}", style="bold blue")
+    conversation = twilio_client.get_conversation()
     if not conversation:
         console.print("No conversation found, creating new one", style="bold blue")
         conversation = twilio_client.create_conversation(my_name)
-        twilio_client.create_participant(conversation, my_number)
+        twilio_client.create_participant(conversation)
         console.print("Created new conversation and participant", style="bold blue")
 
     console.print("Got conversation from twilio", style="bold blue")
@@ -80,7 +77,7 @@ def main():
     continue_game = True
     console.print("Entering main loop", style="bold blue")
     while continue_game:
-        riddle_type = get_riddle_type(conversation, my_number)
+        riddle_type = get_riddle_type(conversation)
 
         messages = [
             {"role": "system",
