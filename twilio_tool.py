@@ -4,23 +4,25 @@ import os
 
 load_dotenv()
 
-api_key = os.getenv("API_KEY_SID")
-api_secret = os.getenv("API_KEY_SECRET")
-account_sid = os.getenv("ACCOUNT_SID")
-SERVICE_SID = os.getenv("SERVICE_SID")
-PERSONAL_NUM = os.getenv("PERSONAL_NUM")
-MASTERSHOOL_NUM = os.getenv("MASTERSHOOL_NUM")
+API_KEY : str = os.getenv("API_KEY")
+API_KEY_SECRET: str  = os.getenv("API_KEY_SECRET")
+ACC_SID: str  = os.getenv("ACC_SID")
+SVC_ID: str  = os.getenv("SVC_ID")
+PERSONAL_NUM: str  = os.getenv("PERSONAL_NUM")
+MASTERSHOOL_NUM: str  = os.getenv("MASTERSHOOL_NUM")
+
+load_dotenv()
+
 
 class TwilioTool:
-    def __init__(self, service_sid: str):
-        self.client = Client(api_key, api_secret, account_sid)
-        self.service = self.client.conversations.v1.services(service_sid)
-
+    def __init__(self):
+        self.client = Client(API_KEY, API_KEY_SECRET, ACC_SID)
+        self.service = self.client.conversations.v1.services(SVC_ID)
 
 
     def create_conversation(self, name):
         """
-        gets name for conversation and creates a new conversation"
+        gets name for conversation and creates a new conversation
         """
         name_str = f"Chat with {name}"
         conversation = self.service.conversations.create(friendly_name=name_str)
@@ -49,7 +51,7 @@ class TwilioTool:
         participants = (self.service.conversations(conversation.sid)
                         .participants.list())
         for participant in participants:
-            if participant.messaging_binding.address == my_number:
+            if participant.messaging_binding.get("address") == my_number:
                 return participant
         return None
 
@@ -59,10 +61,11 @@ class TwilioTool:
         gets number and returns conversation if exists, if not returns None
         """
         for conversation in self.service.conversations.list():
-            for participant in conversation.participants.list():
-                if participant.messaging_binding["address"] == my_number:
+            participants = self.service.conversations(
+                conversation.sid).participants.list()
+            for participant in participants:
+                if participant.messaging_binding.get("address") == my_number:
                     return conversation
-
         return None
 
 
@@ -87,3 +90,12 @@ class TwilioTool:
         )
 
         return message.sid
+
+    def get_messages(self, conversation):
+        messages = (
+            self.service.conversations(conversation.sid).messages.list(limit=20)
+        )
+
+        return messages
+        # for record in messages:
+        #     print(record.ACC_SID)
