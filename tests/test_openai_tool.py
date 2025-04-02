@@ -50,3 +50,40 @@ def test_openai_with_history():
     messages.append({"role": "assistant", "content": second_response.dump()})
 
     print(f"Messages were: {'\n'.join([str(message) for message in messages])}")
+
+
+class Riddle(BaseModel):
+    content: str = Field(description="Give the content of the riddle")
+    answer: str = Field(description="Give the answer of the riddle")
+    hint: str = Field(description="Give the user a hint to solve the riddle")
+
+def test_openai_with_hints():
+    tool = OpenAITool()
+
+    messages = [
+        {"role": "system",
+         "content": "You are my assistant to help me solve riddle."},
+        {"role": "user",
+         "content": "Create a riddle for me to solve"}
+    ]
+
+    riddle_response: Riddle = tool.structured_answer(messages, Riddle)
+    print(riddle_response)
+    messages.append({"role": "assistant", "content": riddle_response.content})
+
+    class UserGuessAnalysis(BaseModel):
+        is_correct: bool = Field(description="True if answer is correct, false otherwise")
+        hint: str = Field(description="If the answer was incorrect, give the use a hin to solve the riddle")
+
+    while True:
+        user_response = input("What is the answer of the riddle? ")
+        messages.append({"role" : "user", "content" : user_response})
+        user_guess_analysis: UserGuessAnalysis = tool.structured_answer(messages, UserGuessAnalysis)
+        if user_guess_analysis.is_correct:
+            print("You did it!")
+            break
+        else:
+            print(f"Wrong answer, but here you get a hint: {user_guess_analysis.hint}")
+            messages.append({"role" : "assistant", "content" : user_guess_analysis.hint})
+
+
