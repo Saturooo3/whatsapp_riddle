@@ -1,6 +1,7 @@
 from twilio.rest import Client
 from dotenv import load_dotenv
 import os
+from time import sleep
 
 load_dotenv()
 
@@ -92,16 +93,22 @@ class TwilioTool:
         return message.sid
 
     def get_messages(self, conversation):
-        messages = (
-            self.service.conversations(conversation.sid).messages.list(limit=20)
-        )
 
+        messages = (
+        self.service.conversations(conversation.sid).messages.list()
+        )
         return messages
 
 
-    def get_last_message_from_user(self, conversation):
-        messages = self.get_messages(conversation)
-        sorted_messages = sorted(messages, key=lambda
-            message_recieved: message_recieved.date_created, reverse=True)
-
-        return sorted_messages[0].body
+    def get_last_message_from_user(self, conversation, my_number):
+        while True:
+            messages = self.get_messages(conversation)
+            if not messages:
+                sleep(1)
+                continue
+            last_message = messages[-1]
+            if last_message.author != my_number:
+                sleep(1)
+                continue
+            else:
+                return last_message.body

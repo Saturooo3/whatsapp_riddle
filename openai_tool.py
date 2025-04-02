@@ -30,7 +30,7 @@ class OpenAITool:
     def structured_answer(self, messages, model):
         completion = self.client.beta.chat.completions.parse(
             model="gpt-4o-mini",
-            messages= messages,         #messages muss eine Liste werden
+            messages= messages,
             response_format=model,
         )
 
