@@ -97,5 +97,11 @@ class TwilioTool:
         )
 
         return messages
-        # for record in messages:
-        #     print(record.ACC_SID)
+
+
+    def get_last_message_from_user(self, conversation):
+        messages = self.get_messages(conversation)
+        sorted_messages = sorted(messages, key=lambda
+            message_recieved: message_recieved.date_created, reverse=True)
+
+        return sorted_messages[0].body
