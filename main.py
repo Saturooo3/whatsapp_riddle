@@ -40,26 +40,27 @@ def get_number_and_name():
 
 def get_riddle_type(conversation):
     ask_riddle_type = "Choose riddle type (e.g., logic, math, word): "
-    TwilioTool.create_message(conversation, message=ask_riddle_type)
-    riddle_type = TwilioTool.get_last_message_from_user(conversation)
+    twilio_client.create_message(conversation, message=ask_riddle_type)
+    riddle_type = twilio_client.get_last_message_from_user(conversation)
     return riddle_type
 
 
 def check_answer_and_give_feedback(answer, riddle_data, conversation):
     if answer == riddle_data["answer"].strip().lower():
-        TwilioTool.create_message(conversation, "Correct!")
+        twilio_client.create_message(conversation, "Correct!")
     else:
         response_for_first_wrong_answer =(f"Wrong! Here's a hint: "
                                           f"{riddle_data["hint"]}\nTry again!")
 
-        TwilioTool.create_message(conversation=conversation, message=response_for_first_wrong_answer)
-        answer = TwilioTool.get_last_message_from_user(conversation)                  #muss den letzten Eintrag vom participant raussuchen
+        twilio_client.create_message(conversation=conversation, message=response_for_first_wrong_answer)
+        answer = twilio_client.get_last_message_from_user(conversation)                  #muss den letzten Eintrag vom participant raussuchen
 
         if answer == riddle_data["answer"].strip().lower():
-            TwilioTool.create_message(conversation, "Correct!")
+            twilio_client.create_message(conversation, "Correct!")
         else:
-            TwilioTool.create_message(conversation,
-                                    f"Wrong! The correct answer was: {riddle_data["answer"]}")
+            twilio_client.create_message(conversation,
+                                    f"Wrong! The correct answer was: "
+                                    f"{riddle_data["answer"]}")
 
 
 def main():
@@ -84,14 +85,14 @@ def main():
              "content": f"Create a riddle for me to solve with the {riddle_type}"}
         ]
 
-        riddle_response: Riddle = OpenAITool.structured_answer(messages=messages, model=Riddle)
-        TwilioTool.create_message(conversation,riddle_response.content)
+        riddle_response: Riddle = openai_client.structured_answer(messages=messages, model=Riddle)
+        twilio_client.create_message(conversation,riddle_response.content)
         messages.append(
             {"role": "assistant", "content": riddle_response.content})
 
         while True:
             user_response = "What is the answer of the riddle? "
-            TwilioTool.create_message(conversation, user_response)
+            twilio_client.create_message(conversation, user_response)
             messages.append({"role": "user", "content": user_response})
             user_guess_analysis: UserGuessAnalysis = OpenAITool.structured_answer(
                 messages, UserGuessAnalysis)
@@ -100,7 +101,8 @@ def main():
                 break
             else:
                 print(
-                    f"Wrong answer, but here you get a hint: {user_guess_analysis.hint}")
+                    f"Wrong answer, but here you get a hint: "
+                    f"{user_guess_analysis.hint}")
                 messages.append(
                     {"role": "assistant", "content": user_guess_analysis.hint})
 
