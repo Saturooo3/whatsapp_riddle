@@ -3,22 +3,28 @@ from dotenv import load_dotenv
 import os
 from time import sleep
 
-load_dotenv()
-
-API_KEY : str = os.getenv("API_KEY")
-API_KEY_SECRET: str  = os.getenv("API_KEY_SECRET")
-ACC_SID: str  = os.getenv("ACC_SID")
-SVC_ID: str  = os.getenv("SVC_ID")
-PERSONAL_NUM: str  = os.getenv("PERSONAL_NUM")
-MASTERSHOOL_NUM: str  = os.getenv("MASTERSHOOL_NUM")
-
-load_dotenv()
+from rich import console
 
 
+console = console.Console()
 class TwilioTool:
     def __init__(self):
-        self.client = Client(API_KEY, API_KEY_SECRET, ACC_SID)
-        self.service = self.client.conversations.v1.services(SVC_ID)
+        load_dotenv()
+
+        self.account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        assert self.account_sid is not None, "TWILIO_ACCOUNT_SID is not set"
+        self.api_key = os.getenv("TWILIO_API_KEY_SID")
+        assert self.api_key is not None, "TWILIO_API_KEY_SID is not set"
+        self.api_key_secret = os.getenv("TWILIO_API_KEY_SECRET")
+        assert self.api_key_secret is not None, "TWILIO_API_KEY_SECRET is not set"
+        self.service_sid = os.getenv("TWILIO_SERVICE_SID")
+        assert self.service_sid is not None, "TWILIO_SERVICE_SID is not set"
+        self.twilio_number = os.getenv("TWILIO_MASTERSCHOOL_NUM")
+        assert self.twilio_number is not None, "TWILIO_MASTERSCHOOL_NUM is not set"
+
+        self.client = Client(self.api_key, self.api_key_secret, self.account_sid)
+        self.service = self.client.conversations.v1.services(self.service_sid)
+
 
 
     def create_conversation(self, name):
@@ -34,11 +40,12 @@ class TwilioTool:
         """
         gets a conversation and adds participant to the conversation
         """
+        console.print(f"Creating participants for conversation {conversation.sid}, my number {my_number}, twilio number {self.twilio_number}", style="bold blue")
         participant = (
-            self.service.conversations(conversation.sid)
+                conversation
                 .participants.create(
-                messaging_binding_address=my_number,
-                messaging_binding_proxy_address=MASTERSHOOL_NUM
+                    messaging_binding_address=my_number,
+                    messaging_binding_proxy_address=self.twilio_number
             )
         )
         return participant
@@ -62,11 +69,14 @@ class TwilioTool:
         gets number and returns conversation if exists, if not returns None
         """
         for conversation in self.service.conversations.list():
-            participants = self.service.conversations(
-                conversation.sid).participants.list()
-            for participant in participants:
+            console.print(f"Checking conversation {conversation.sid}", style="bold blue")
+            for participant in conversation.participants.list():
+                console.print(f"Checking participant {participant.sid}", style="bold blue")
+                if participant.messaging_binding is None:
+                    continue
                 if participant.messaging_binding.get("address") == my_number:
                     return conversation
+        console.print(f"No conversation found for {my_number}", style="bold red")
         return None
 
 
@@ -75,17 +85,16 @@ class TwilioTool:
         gets conversation and message as string and sends message to conversation
         """
         message=self.service.conversations(conversation.sid).messages.create(
-            author=MASTERSHOOL_NUM,
+            author=self.twilio_number,
             body=message
         )
         return message.sid
 
     def send_whatsapp_message(self, to_whatsapp: str, body: str) -> str:
-        from_whatsapp = MASTERSHOOL_NUM
         if not to_whatsapp.startswith("whatsapp:"):
             to_whatsapp = "whatsapp:" + to_whatsapp
         message = self.client.messages.create(
-            from_=from_whatsapp,
+            from_=self.twilio_number,
             body=body,
             to=to_whatsapp
         )

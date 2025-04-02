@@ -3,20 +3,12 @@ from dotenv import load_dotenv
 from twilio_tool import TwilioTool
 from openai_tool import (OpenAITool, Riddle, UserGuessAnalysis)
 
-# Laden der Umgebungsvariablen
-load_dotenv()
-
-# Twilio-Konfiguration
-API_KEY : str = os.getenv("API_KEY_SID")
-API_KEY_SECRET: str  = os.getenv("API_KEY_SECRET")
-ACC_SID: str  = os.getenv("ACC_SID")
-SVC_ID: str  = os.getenv("SVC_ID")
-PERSONAL_NUM: str  = os.getenv("PERSONAL_NUM")
-MASTERSHOOL_NUM: str  = os.getenv("MASTERSHOOL_NUM")
+from rich import console
 
 twilio_client = TwilioTool()
 openai_client = OpenAITool()
 
+console = console.Console()
 
 def display_greeting():
     text = (
@@ -66,18 +58,27 @@ def check_answer_and_give_feedback(answer, riddle_data, conversation, my_number)
 def main():
 
     #my_number, my_name = get_number_and_name()
-    my_number = PERSONAL_NUM
+    console.print("Starting game!", style="bold green")
+    load_dotenv()
+    my_number = os.getenv("MY_NUM")
     my_name = "Yusuf"
 
+    console.print(f"Getting conversation for {my_number}", style="bold blue")
     conversation = twilio_client.get_conversation(my_number)
     if not conversation:
+        console.print("No conversation found, creating new one", style="bold blue")
         conversation = twilio_client.create_conversation(my_name)
         twilio_client.create_participant(conversation, my_number)
+        console.print("Created new conversation and participant", style="bold blue")
+
+    console.print("Got conversation from twilio", style="bold blue")
 
     greeting = display_greeting()
+    console.print("Displayed greeting", style="bold blue")
     twilio_client.create_message(conversation=conversation, message=greeting)
 
     continue_game = True
+    console.print("Entering main loop", style="bold blue")
     while continue_game:
         riddle_type = get_riddle_type(conversation, my_number)
 

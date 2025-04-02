@@ -13,7 +13,7 @@ API_KEY_SECRET: str  = os.getenv("API_KEY_SECRET")
 ACC_SID: str  = os.getenv("ACC_SID")
 SVC_ID: str  = os.getenv("SVC_ID")
 PERSONAL_NUM: str  = os.getenv("PERSONAL_NUM")
-MASTERSHOOL_NUM: str  = os.getenv("MASTERSHOOL_NUM")
+MASTERSCHOOL_NUM: str  = os.getenv("MASTERSCHOOL_NUM")
 
 # Test für das Senden einer WhatsApp-Nachricht
 def test_send_whatsapp_message():
