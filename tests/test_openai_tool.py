@@ -33,9 +33,10 @@ class PopulationStats(BaseModel):
 
 
 def test_openai_with_history():
+    # Run with: uv run pytest -k test_openai_with_history --capture no
     tool = OpenAITool()
     messages = [
-        {"role": "system", "content": "Was ist die Hauptstadt von Deutschland?"},
+        {"role": "system", "content": "Du bist ein hilfreicher Assistant der mir strukturierte Antworten auf Geographie und Landesstatistiken gibt."},
         {"role": "user", "content": "Was ist die Hauptstadt und die Einwohnerzahl von Deutschland?"}
     ]
 
@@ -46,9 +47,6 @@ def test_openai_with_history():
 
     second_response : PopulationStats = tool.structured_answer(messages, PopulationStats)
     print(second_response.dump())
+    messages.append({"role": "assistant", "content": second_response.dump()})
 
-
-
-
-
-
+    print(f"Messages were: {'\n'.join([str(message) for message in messages])}")
