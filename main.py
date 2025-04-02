@@ -13,11 +13,12 @@ console = console.Console()
 def display_greeting():
     text = (
     """
-    Welcome to the game!
-    The rules are simple:
+    Welcome to the game!\n
+    The rules are simple:\n
     1. Choose the type of the riddle.
-    2. Answer the riddle or ask for "hint".
-    3. If the answer is wrong you get a hint.
+    2. Answer the riddle, ask for "hint".
+    3. If the answer is wrong, I will give you a hint.
+    4. If you want a new riddle or you want to give up, just tell me...
     4. Enjoy the game and don't forget to invite your friends to compete with them.
     """
     )
@@ -47,9 +48,14 @@ def check_answer_and_give_feedback(conversation, messages):
         if user_guess_analysis.is_correct:
             twilio_client.create_message(conversation, "You did it!")
             break
+        elif user_guess_analysis.is_giving_up:
+            twilio_client.create_message(conversation, "Shame on you. You gave up!")
+            break
+        elif user_guess_analysis.is_asking_for_hint:
+            twilio_client.create_message(conversation, user_guess_analysis.hint)
         else:
             respond_wrong_answer = (
-                f"Wrong answer, but here you get a hint: "
+                f"Wrong answer, but here you get a hint:\n"
                 f"{user_guess_analysis.hint}")
 
             twilio_client.create_message(conversation, respond_wrong_answer)
@@ -102,7 +108,6 @@ def main():
             {"role": "assistant", "content": riddle_response.content})
 
         check_answer_and_give_feedback(conversation, messages)
-
 
 
 if __name__ == "__main__":
