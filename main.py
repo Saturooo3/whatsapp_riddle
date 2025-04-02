@@ -33,7 +33,7 @@ def get_number_and_name():
 def get_riddle_type(conversation):
     ask_riddle_type = "Choose riddle type (e.g., logic, math, word): "
     twilio_client.create_message(conversation, message=ask_riddle_type)
-    riddle_type = twilio_client.get_last_message_from_user(conversation, twilio_client.my_number)
+    riddle_type = twilio_client.get_last_message_from_user(conversation)
     return riddle_type
 
 
@@ -45,7 +45,7 @@ def check_answer_and_give_feedback(answer, riddle_data, conversation):
                                           f"{riddle_data["hint"]}\nTry again!")
 
         twilio_client.create_message(conversation=conversation, message=response_for_first_wrong_answer)
-        answer = twilio_client.get_last_message_from_user(conversation, twilio_client.my_number)                  #muss den letzten Eintrag vom participant raussuchen
+        answer = twilio_client.get_last_message_from_user(conversation)                  #muss den letzten Eintrag vom participant raussuchen
 
         if answer == riddle_data["answer"].strip().lower():
             twilio_client.create_message(conversation, "Correct!")
@@ -81,29 +81,33 @@ def main():
 
         messages = [
             {"role": "system",
-             "content": "You are my assistant to help me solve riddle."},
+             "content": "You are my assistant to give me riddles to solve, and give me hints, when I'm stuck."},
             {"role": "user",
              "content": f"Create a riddle for me to solve with the type {riddle_type}"}
         ]
 
         riddle_response: Riddle = openai_client.structured_answer(messages=messages, model=Riddle)
         twilio_client.create_message(conversation,riddle_response.content)
+
         messages.append(
             {"role": "assistant", "content": riddle_response.content})
 
         while True:
-            user_response = "What is the answer of the riddle? "
-            twilio_client.create_message(conversation, user_response)
-            messages.append({"role": "user", "content": user_response})
+            new_message = twilio_client.get_last_message_from_user(conversation)
+            messages.append({"role" : "user", "content" : new_message})
             user_guess_analysis: UserGuessAnalysis = openai_client.structured_answer(
                 messages, UserGuessAnalysis)
+
             if user_guess_analysis.is_correct:
-                print("You did it!")
+                twilio_client.create_message(conversation,"You did it!")
                 break
             else:
-                print(
+                respond_wrong_answer = (
                     f"Wrong answer, but here you get a hint: "
                     f"{user_guess_analysis.hint}")
+
+                twilio_client.create_message(conversation, respond_wrong_answer)
+
                 messages.append(
                     {"role": "assistant", "content": user_guess_analysis.hint})
 

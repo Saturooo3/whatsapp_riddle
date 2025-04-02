@@ -1,7 +1,7 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-
+import os
 
 class UserGuessAnalysis(BaseModel):
     is_correct: bool = Field(
@@ -10,14 +10,14 @@ class UserGuessAnalysis(BaseModel):
         description="If the answer was incorrect, give the use a hin to solve the riddle")
 
 class Riddle(BaseModel):
-    content: str = Field(description="Give the content of the riddle")
-    answer: str = Field(description="Give the answer of the riddle")
-    hint: str = Field(description="Give the user a hint to solve the riddle")
+    content: str = Field(description="Riddle to solve")
+
 
 class OpenAITool:
     def __init__(self):
         load_dotenv()
-        self.client = OpenAI()
+        api_key = os.getenv("OPENAI_API_KEY")
+        self.client = OpenAI(api_key=api_key)
 
     def send_prompt(self, prompt):
         response = self.client.chat.completions.create(
