@@ -7,7 +7,7 @@ def test_openai_tool():
     response = tool.send_prompt("Was ist die Hauptstadt von Deutschland?")
     assert "Berlin" in response
     print(response)
-    ### test für structured output with pydantic model
+
 
 class CountryStats(BaseModel):
     capital_city: str

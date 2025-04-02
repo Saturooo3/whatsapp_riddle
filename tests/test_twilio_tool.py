@@ -2,42 +2,47 @@ import pytest
 from twilio_tool import TwilioTool
 from dotenv import load_dotenv
 import os
-"""
+
+
 # Lade die .env-Datei, um die Umgebungsvariablen zu laden
 load_dotenv()
 
 # Beispielhafte Testdaten
-PERSONAL_NUM = os.getenv('PERSONAL_NUM')
-MASTERSHOOL_NUM = os.getenv('MASTERSHOOL_NUM')
-SERVICE_SID = os.getenv('SERVICE_SID')
+API_KEY : str = os.getenv("API_KEY")
+API_KEY_SECRET: str  = os.getenv("API_KEY_SECRET")
+ACC_SID: str  = os.getenv("ACC_SID")
+SVC_ID: str  = os.getenv("SVC_ID")
+PERSONAL_NUM: str  = os.getenv("PERSONAL_NUM")
+MASTERSHOOL_NUM: str  = os.getenv("MASTERSHOOL_NUM")
 
 # Test für das Senden einer WhatsApp-Nachricht
 def test_send_whatsapp_message():
-    tool = TwilioTool(SERVICE_SID)
+    tool = TwilioTool()
     response = tool.send_whatsapp_message(PERSONAL_NUM, "Testnachricht")
+    print(f"Message SID: {response}")
     assert response is not None
     assert isinstance(response, str)
-    print(f"Message SID: {response}")
 
 # Test für das Erstellen einer Konversation
 def test_create_conversation():
-    tool = TwilioTool(SERVICE_SID)
-    conversation = tool.create_conversation("name")
+    tool = TwilioTool()
+    conversation = tool.create_conversation("Yusuf")
     assert conversation is not None, "Es wurde keine Konversation gefunden"
 
 # Test für das Abrufen einer Konversation
 def test_get_my_conversation():
-    tool = TwilioTool(SERVICE_SID)
+    tool = TwilioTool()
     conversation = tool.get_conversation(PERSONAL_NUM)
     assert conversation is not None
+    print(conversation)
     assert hasattr(conversation, "sid")
     print(f"Conversation SID: {conversation.sid}")
 
 # Test für das Erstellen eines Teilnehmers
 def test_create_participant():
-    tool = TwilioTool(SERVICE_SID)
+    tool = TwilioTool()
     # Zuerst eine Konversation erstellen
-    conversation = tool.create_conversation("2test_partisipance")
+    conversation = tool.create_conversation("part2")
     participant = tool.create_participant(conversation, PERSONAL_NUM)
     assert participant is not None
     assert hasattr(participant, "sid")
@@ -45,13 +50,29 @@ def test_create_participant():
 
 # Test für das Erstellen einer Nachricht
 def test_create_message():
-    tool = TwilioTool(SERVICE_SID)
+    tool = TwilioTool()
     # Zuerst eine Konversation erstellen
-    conversation = tool.create_conversation("3test_partisipance")
-    message_sid = tool.create_message(conversation, "Testnachricht")
+    conversation = tool.get_conversation(PERSONAL_NUM)
+    message_sid = tool.create_message(conversation, message="Testnachricht")
     print(f"Message SID: {message_sid}")
     assert message_sid is not None
-    assert isinstance(message_sid, str)"""
+    assert isinstance(message_sid, str)
 
+#Test für das Abrufen der Nachrichten
+def test_list_messages():
+    tool = TwilioTool()
+    conversation = tool.get_conversation(my_number=PERSONAL_NUM)
+    messages = tool.get_messages(conversation)
+    for message in messages:
+        print(f"From: {message.author}, Message: {message.body}")
 
+    assert isinstance(messages, list)
+
+#Test für das Abrufen eines Teilnehmers
+def test_get_participant():
+    tool = TwilioTool()
+    conversation = tool.get_conversation(my_number=PERSONAL_NUM)
+    participant = tool.get_participant(conversation, PERSONAL_NUM)
+    assert participant is not None
+    assert participant.messaging_binding.get("address") == PERSONAL_NUM
 
