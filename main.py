@@ -7,26 +7,15 @@ from openai_tool import OpenAITool
 load_dotenv()
 
 # Twilio-Konfiguration
-ACC_SID = os.getenv("ACCOUNT_SID")
-API_KEY = os.getenv("API_KEY_SID")
-API_KEY_SECRET = os.getenv("API_KEY_SECRET")
-SVC_ID = os.getenv("SERVICE_SID")
-MASTERSHOOL_NUM = os.getenv("MASTERSHOOL_NUMBER")
-PERSONAL_NUM = os.getenv("PERSONAL_NUMBER")
+API_KEY : str = os.getenv("API_KEY_SID")
+API_KEY_SECRET: str  = os.getenv("API_KEY_SECRET")
+ACC_SID: str  = os.getenv("ACC_SID")
+SVC_ID: str  = os.getenv("SVC_ID")
+PERSONAL_NUM: str  = os.getenv("PERSONAL_NUM")
+MASTERSHOOL_NUM: str  = os.getenv("MASTERSHOOL_NUM")
 
-twilio_client = TwilioTool(SVC_ID)
+twilio_client = TwilioTool()
 openai_client = OpenAITool()
-
-api_key = API_KEY
-api_secret = API_KEY_SECRET
-account_sid = ACC_SID
-# twilio_client = Client(api_key, api_secret, account_sid)                          #unnecessary?
-# service = twilio_client.conversations.v1.services(SVC_ID)                          #unnecessary?
-
-
-# Initialisierung des Twilio-Clients
-# twilio_client = Client(API_KEY, API_KEY_SECRET, ACC_SID)                          #unnecessary?
-
 
 
 def display_greeting():
@@ -48,17 +37,27 @@ def get_number_and_name():
     name = input("Enter your name: ")
     return number, name
 
-def get_riddle_format():
-    riddle_type = input("Choose riddle type (e.g., logic, math, word): ")
-    riddle_difficulty = input("Choose difficulty (easy, medium, hard): ")
+def get_riddle_format(conversation):
+    ask_riddle_type = "Choose riddle type (e.g., logic, math, word): "
+    TwilioTool.create_message(conversation, message=ask_riddle_type)
+    riddle_type = TwilioTool.get_messages(conversation).strip().lower()                  #muss den letzten Eintrag vom participant raussuchen
+
+    ask_riddle_difficulty = "Choose difficulty (easy, medium, hard): "
+    TwilioTool.create_message(conversation, message=ask_riddle_difficulty)
+    riddle_difficulty = TwilioTool.get_messages(conversation).strip().lower()            #muss den letzten Eintrag vom participant raussuchen
+
     return riddle_type, riddle_difficulty
 
 def check_answer_and_give_feedback(answer, riddle_data, conversation):
     if answer == riddle_data["answer"].strip().lower():
         TwilioTool.create_message(conversation, "Correct!")
     else:
-        TwilioTool.create_message(conversation=conversation, message=f"Wrong! Here's a hint: {riddle_data["hint"]}")
-        answer = input("Try again! ").strip().lower()
+        response_for_first_wrong_answer =(f"Wrong! Here's a hint: "
+                                          f"{riddle_data["hint"]}\nTry again!")
+
+        TwilioTool.create_message(conversation=conversation, message=response_for_first_wrong_answer)
+        answer = TwilioTool.get_messages(conversation).strip().lower()                  #muss den letzten Eintrag vom participant raussuchen
+
         if answer == riddle_data["answer"].strip().lower():
             TwilioTool.create_message(conversation, "Correct!")
         else:
@@ -73,19 +72,22 @@ def main():
     conversation = twilio_client.get_conversation(my_number)
     if not conversation:
         conversation = twilio_client.create_conversation(my_name)
-        twilio_client.create_participant(conversation)
+        twilio_client.create_participant(conversation, my_number)
 
     continue_game = True
     while continue_game:
         riddle_type, riddle_difficulty = get_riddle_format()
-        riddle_data = OpenAITool.structured_answer(messages, model)
-
-        TwilioTool.create_message(conversation, riddle_data["riddle"])
-
-        user_answer = input("Your answer: ").strip().lower()
+        riddle_data = OpenAITool.structured_answer()
+        riddle_text = riddle_data["riddle"],"Your answer: "
+        TwilioTool.create_message(conversation, riddle_text)
+        user_answer = TwilioTool.get_messages(conversation).strip().lower()         #muss den letzten Eintrag vom participant raussuchen
         check_answer_and_give_feedback(user_answer, riddle_data, conversation)
 
-        ask_to_continue = input("Do you want another riddle? (yes/no): ").strip().lower()
+        ask_to_continue_str ="Do you want another riddle? (yes/no): "
+        TwilioTool.create_message(conversation, ask_to_continue_str)
+
+        ask_to_continue = TwilioTool.get_messages(conversation).strip().lower()     #muss den letzten Eintrag vom participant raussuchen
+
         if ask_to_continue != "yes":
             continue_game = False
             TwilioTool.create_message(conversation, "See you next time!")
