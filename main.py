@@ -5,6 +5,7 @@ from openai_tool import OpenAITool
 from whatsapp_riddle_executers import (Riddle, UserGuessAnalysis)
 from rich import console
 import json
+from Ascii import print_ascii_greeting
 
 twilio_client = TwilioTool()
 openai_client = OpenAITool()
@@ -12,17 +13,7 @@ openai_client = OpenAITool()
 console = console.Console()
 
 def display_greeting():
-    text = (
-    """
-    Welcome to the game!\n
-    The rules are simple:\n
-    1. Choose the type of the riddle.
-    2. Answer the riddle, ask for "hint".
-    3. If the answer is wrong, I will give you a hint.
-    4. If you want a new riddle or you want to give up, just tell me...
-    4. Enjoy the game and don't forget to invite your friends to compete with them.
-    """
-    )
+    text = print_ascii_greeting()  # Ruft die ASCII-Grafik aus Ascii.py ab
     return text
 
 
