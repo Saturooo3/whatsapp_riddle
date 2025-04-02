@@ -75,6 +75,15 @@ def load_or_create_conversation(my_name):
 
     return conversation
 
+def initialize_messages(riddle_type):
+    messages = [
+            {"role": "system",
+             "content": "You are my assistant to give me riddles to solve, and give me hints, when I'm stuck."},
+            {"role": "user",
+             "content": f"Create a riddle for me to solve with the type {riddle_type}"}
+        ]
+
+    return messages
 
 def main():
 
@@ -94,12 +103,7 @@ def main():
     while continue_game:
         riddle_type = get_riddle_type(conversation)
 
-        messages = [
-            {"role": "system",
-             "content": "You are my assistant to give me riddles to solve, and give me hints, when I'm stuck."},
-            {"role": "user",
-             "content": f"Create a riddle for me to solve with the type {riddle_type}"}
-        ]
+        messages = initialize_messages(riddle_type)
 
         riddle_response: Riddle = openai_client.structured_answer(messages=messages, model=Riddle)
         twilio_client.create_message(conversation,riddle_response.content)
