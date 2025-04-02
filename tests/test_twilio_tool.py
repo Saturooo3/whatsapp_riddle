@@ -76,3 +76,11 @@ def test_get_participant():
     assert participant is not None
     assert participant.messaging_binding.get("address") == PERSONAL_NUM
 
+
+
+def test_last_message_from_user():
+    tool = TwilioTool()
+    conversation = tool.get_conversation(my_number=PERSONAL_NUM)
+    last_message_from_user = tool.get_last_message_from_user(conversation)
+    print(last_message_from_user)
+    assert isinstance(last_message_from_user, str)
