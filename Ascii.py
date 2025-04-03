@@ -45,7 +45,7 @@ def print_ascii_greeting():
 
 def print_choose_riddle():
     return (
-        "🤔 Choose your riddle type:\n📚 (e.g., logic, math, word)"
+        "🤔 Choose your riddle type:\n📚 (e.g., math, word)"
     )
 
 def print_win():

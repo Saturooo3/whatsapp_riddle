@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from twilio_tool import TwilioTool
 from openai_tool import OpenAITool
 from whatsapp_riddle_executers import (Riddle, UserGuessAnalysis)
