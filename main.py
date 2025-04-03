@@ -5,7 +5,7 @@ from openai_tool import OpenAITool
 from whatsapp_riddle_executers import (Riddle, UserGuessAnalysis)
 from rich import console
 import json
-from Ascii import print_ascii_greeting
+import Ascii
 
 twilio_client = TwilioTool()
 openai_client = OpenAITool()
@@ -13,7 +13,7 @@ openai_client = OpenAITool()
 console = console.Console()
 
 def display_greeting():
-    text = print_ascii_greeting()  # Ruft die ASCII-Grafik aus Ascii.py ab
+    text = Ascii.print_ascii_greeting()
     return text
 
 
@@ -24,7 +24,7 @@ def get_number_and_name():
 
 
 def get_riddle_type(conversation):
-    ask_riddle_type = "Choose riddle type (e.g., logic, math, word): "
+    ask_riddle_type = Ascii.print_choose_riddle()
     twilio_client.create_message(conversation, message=ask_riddle_type)
     riddle_type = twilio_client.get_last_message_from_user(conversation)
     return riddle_type
@@ -38,17 +38,15 @@ def check_answer_and_give_feedback(conversation, messages):
             messages, UserGuessAnalysis)
 
         if user_guess_analysis.is_correct:
-            twilio_client.create_message(conversation, "You did it!")
+            twilio_client.create_message(conversation, Ascii.print_win())
             break
         elif user_guess_analysis.is_giving_up:
-            twilio_client.create_message(conversation, f"Shame on you. You gave up!\nThe answer was: {user_guess_analysis.answer}")
+            twilio_client.create_message(conversation, Ascii.print_give_up(user_guess_analysis))
             break
         elif user_guess_analysis.is_asking_for_hint:
             twilio_client.create_message(conversation, user_guess_analysis.hint)
         else:
-            respond_wrong_answer = (
-                f"Wrong answer, but here you get a hint:\n"
-                f"{user_guess_analysis.hint}")
+            respond_wrong_answer = Ascii.print_hint(user_guess_analysis)
 
             twilio_client.create_message(conversation, respond_wrong_answer)
 
